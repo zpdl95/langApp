@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { Animated, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -6,32 +7,26 @@ const Container = styled.View`
   justify-content: center;
   align-items: center;
 `;
-const Box = styled.TouchableOpacity`
+
+/* 한번에 animated컴포넌트 생성 , 단점 import 해야함 */
+const Box = styled(Animated.createAnimatedComponent(TouchableOpacity))`
   background-color: violet;
   width: 200px;
   height: 200px;
 `;
 
+/* const를 2번 사용한 animated컴포넌트 생성, 단점 생성을 2번해야함 */
+const AnimatedBox = Animated.createAnimatedComponent(Box);
+
 export default function App() {
-  const [y, setY] = useState(0); /* y좌표값 저장 */
-  const [intervalId, setIntervalId] = useState(null); /* 인터벌 id 저장 */
-  const moveUp = () => {
-    const id = setInterval(
-      () => setY((prev) => prev + 1),
-      10
-    ); /* 매초 y값 변경 */
-    setIntervalId(id);
-  };
-  console.log("rendering...");
-  useEffect(() => {
-    /* y값이 200이 되면 인터벌 삭제 */
-    if (y === 200) {
-      clearInterval(intervalId);
-    }
-  }, [y, intervalId]);
+  /* 애니메이션에 들어갈 값은 Animated로 만든다 */
+  /* Animated로 만든 값은 직접변경하지 않는다  */
+  /* 모든 컴포넌트에 애니메이션을 만들 수 없다 */
+  const Y = new Animated.Value(0);
+  const moveUp = () => {};
   return (
     <Container>
-      <Box onPress={moveUp} style={{ transform: [{ translateY: -y }] }}></Box>
+      <Box onPress={moveUp} style={{ transform: [{ translateY: Y }] }}></Box>
     </Container>
   );
 }
