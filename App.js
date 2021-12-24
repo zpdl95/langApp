@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Animated, TouchableOpacity } from "react-native";
 import styled from "styled-components/native";
 
@@ -16,22 +16,25 @@ const Box = styled.View`
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
 export default function App() {
+  const [up, setUp] = useState(false);
+
   /* 애니메이션에 들어갈 값은 Animated로 만든다 */
   /* Animated로 만든 값은 직접변경하지 않는다  */
   /* 모든 컴포넌트에 애니메이션을 만들 수 없다 */
-  const Y = new Animated.Value(0);
+  /* useRef()는 다시 렌더링 될때마다 초기값으로 돌아가길 원하지 않는 value값을 기억함 */
+  const Y = useRef(new Animated.Value(0)).current;
+  const toggleUp = () => setUp((prev) => !prev);
   const moveUp = () => {
-    Animated.spring(Y, {
-      toValue: -200 /* Value가 얼만큼 커지거나 작아질지 선택 */,
+    Animated.timing(Y, {
+      toValue: up ? 200 : -200 /* Value가 얼만큼 커지거나 작아질지 선택 */,
       useNativeDriver: true /* 애니메이션의 동작을 native가 관리함. 매초마다 native쪽으로 정보를 보내줄 필요가 없다 */,
-      bounciness: 50,
-    }).start();
+    }).start(toggleUp);
   };
-  Y.addListener((e) => console.log(e));
+  console.log("fdfd");
   return (
     <Container>
       <TouchableOpacity onPress={moveUp}>
-        <AnimatedBox style={{ transform: [{ translateY: Y }] }}></AnimatedBox>
+        <AnimatedBox style={{ transform: [{ translateY: Y }] }} />
       </TouchableOpacity>
     </Container>
   );
