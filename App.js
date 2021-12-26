@@ -23,23 +23,27 @@ export default function App() {
   /* Animated로 만든 값은 직접변경하지 않는다  */
   /* 모든 컴포넌트에 애니메이션을 만들 수 없다 */
   /* useRef()는 다시 렌더링 될때마다 초기값으로 돌아가길 원하지 않는 value값을 기억함 .current속성을 가진 값에 넣어줌 */
-  const Y_POSITION = useRef(new Animated.Value(300)).current;
+  const POSITION = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const toggleUp = () => setUp((prev) => !prev);
   const moveUp = () => {
-    Animated.timing(Y_POSITION, {
+    Animated.timing(POSITION, {
       toValue: up ? 300 : -300 /* Value가 얼만큼 커지거나 작아질지 선택 */,
-      useNativeDriver: true /* 애니메이션의 동작을 native가 관리함. 매초마다 native쪽으로 정보를 보내줄 필요가 없다 */,
+      useNativeDriver: false /* 애니메이션의 동작을 native가 관리함. 매초마다 native쪽으로 정보를 보내줄 필요가 없다 */,
       duration: 3000,
     }).start(toggleUp);
   };
   /* interpolate = 보간법: 두 지점을 주면 그 가운데 있는 지점을 추정하는것 */
-  const opacityValue = Y_POSITION.interpolate({
-    inputRange: [-300, 0, 300] /* interpolate로 받을 Y_POSITION값 */,
-    outputRange: [1, 0, 1] /* interpolate로 출력할 Y_POSITION값 */,
-  });
-  const borderRadius = Y_POSITION.interpolate({
+  const borderRadius = POSITION.y.interpolate({
     inputRange: [-300, 0, 300],
     outputRange: [100, 0, 100],
+  });
+  const rotation = POSITION.y.interpolate({
+    inputRange: [-300, 300],
+    outputRange: ["-360deg", "360deg"],
+  });
+  const bgColor = POSITION.y.interpolate({
+    inputRange: [-300, 300],
+    outputRange: ["red", "blue"],
   });
 
   return (
@@ -48,8 +52,9 @@ export default function App() {
         onPress={moveUp}
         style={{
           borderRadius,
-          opacity: opacityValue,
-          transform: [{ translateY: Y_POSITION }],
+          transform: [{ translateY: POSITION.y }, { rotateZ: rotation }],
+          backgroundColor:
+            bgColor /* backgroundColor옵션은 nativeDriver사용중일때는 불가능 */,
         }}
       ></AnimatedBox>
     </Container>
