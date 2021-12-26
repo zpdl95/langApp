@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Animated } from "react-native";
+import { Animated, Dimensions } from "react-native";
 import styled from "styled-components/native";
 
 const Container = styled.View`
@@ -16,33 +16,54 @@ const Box = styled.Pressable`
 `;
 const AnimatedBox = Animated.createAnimatedComponent(Box);
 
-export default function App() {
-  const [up, setUp] = useState(false);
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
+export default function App() {
   /* 애니메이션에 들어갈 값은 Animated로 만든다 */
   /* Animated로 만든 값은 직접변경하지 않는다  */
   /* 모든 컴포넌트에 애니메이션을 만들 수 없다 */
   /* useRef()는 다시 렌더링 될때마다 초기값으로 돌아가길 원하지 않는 value값을 기억함 .current속성을 가진 값에 넣어줌 */
   const POSITION = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
-  const toggleUp = () => setUp((prev) => !prev);
+  const topLeft = Animated.timing(POSITION, {
+    toValue: {
+      x: -SCREEN_WIDTH / 2 + 100,
+      y: -SCREEN_HEIGHT / 2 + 100,
+    },
+    useNativeDriver: false,
+  });
+  const bottomLeft = Animated.timing(POSITION, {
+    toValue: {
+      x: -SCREEN_WIDTH / 2 + 100,
+      y: SCREEN_HEIGHT / 2 - 100,
+    },
+    useNativeDriver: false,
+  });
+  const bottomRight = Animated.timing(POSITION, {
+    toValue: {
+      x: SCREEN_WIDTH / 2 - 100,
+      y: SCREEN_HEIGHT / 2 - 100,
+    },
+    useNativeDriver: false,
+  });
+  const topRight = Animated.timing(POSITION, {
+    toValue: {
+      x: SCREEN_WIDTH / 2 - 100,
+      y: -SCREEN_HEIGHT / 2 + 100,
+    },
+    useNativeDriver: false,
+  });
   const moveUp = () => {
-    Animated.timing(POSITION, {
-      toValue: up ? 300 : -300 /* Value가 얼만큼 커지거나 작아질지 선택 */,
-      useNativeDriver: false /* 애니메이션의 동작을 native가 관리함. 매초마다 native쪽으로 정보를 보내줄 필요가 없다 */,
-      duration: 3000,
-    }).start(toggleUp);
+    Animated.loop(
+      Animated.sequence([topLeft, bottomLeft, bottomRight, topRight])
+    ).start();
   };
   /* interpolate = 보간법: 두 지점을 주면 그 가운데 있는 지점을 추정하는것 */
   const borderRadius = POSITION.y.interpolate({
-    inputRange: [-300, 0, 300],
-    outputRange: [100, 0, 100],
-  });
-  const rotation = POSITION.y.interpolate({
-    inputRange: [-300, 300],
-    outputRange: ["-360deg", "360deg"],
+    inputRange: [-200, 200],
+    outputRange: [100, 0],
   });
   const bgColor = POSITION.y.interpolate({
-    inputRange: [-300, 300],
+    inputRange: [-200, 200],
     outputRange: ["red", "blue"],
   });
 
@@ -52,7 +73,7 @@ export default function App() {
         onPress={moveUp}
         style={{
           borderRadius,
-          transform: [{ translateY: POSITION.y }, { rotateZ: rotation }],
+          transform: [...POSITION.getTranslateTransform()],
           backgroundColor:
             bgColor /* backgroundColor옵션은 nativeDriver사용중일때는 불가능 */,
         }}
