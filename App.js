@@ -34,10 +34,22 @@ export default function App() {
   });
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true /* 모든 pressEvent를 감지 */,
+      /* 모든 pressEvent를 감지할지 안할지 결정하는 함수 */
+      onStartShouldSetPanResponder: () => true,
+
       /* 터치 움직임을 받는 함수 좌표를 넘겨줌 */
       onPanResponderMove: (event, { dx, dy }) => {
         POSITION.setValue({ x: dx, y: dy }); /* setValue = 직접 x,y값을 변경 */
+      },
+      /* 터치가 끝난후 실행되는 함수 */
+      onPanResponderRelease: () => {
+        Animated.spring(POSITION, {
+          toValue: {
+            x: 0,
+            y: 0,
+          },
+          useNativeDriver: false,
+        }).start();
       },
     })
   ).current;
@@ -45,7 +57,7 @@ export default function App() {
   return (
     <Container>
       <AnimatedBox
-        {...panResponder.panHandlers}
+        {...panResponder.panHandlers} /* 터치관련 함수를 props형태로 받는다 */
         style={{
           borderRadius,
           transform: [...POSITION.getTranslateTransform()],
