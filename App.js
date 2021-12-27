@@ -37,19 +37,29 @@ export default function App() {
       /* 모든 pressEvent를 감지할지 안할지 결정하는 함수 */
       onStartShouldSetPanResponder: () => true,
 
-      /* 터치 움직임을 받는 함수 좌표를 넘겨줌 */
-      onPanResponderMove: (event, { dx, dy }) => {
-        POSITION.setValue({ x: dx, y: dy }); /* setValue = 직접 x,y값을 변경 */
+      /* 터치가 감지될때 실행 터치가 끝나면 종료되는 듯함 */
+      onPanResponderGrant: () => {
+        console.log("터치 시작");
+        /* offset은 POSITION의 움직임의 시작지점으로 설정됨.
+        setOffset = 저장된 offset값을 x,y값으로 설정함. _value는 offset값으로 생각됨 */
+        POSITION.setOffset({ x: POSITION.x._value, y: POSITION.y._value });
       },
-      /* 터치가 끝난후 실행되는 함수 */
+
+      /* 터치의 움직임에 반응해 실행 움직일때마다 실행. 터치좌표값을 줌
+      이 좌표값은 offset이 있으면 offset값을 시작좌표값으로 실행됨 */
+      onPanResponderMove: (event, { dx, dy }) => {
+        console.log("움직이는중");
+        /* setValue = 직접 x,y값을 변경 */
+        POSITION.setValue({
+          x: dx,
+          y: dy,
+        });
+      },
+      /* 터치를 때면 실행 */
       onPanResponderRelease: () => {
-        Animated.spring(POSITION, {
-          toValue: {
-            x: 0,
-            y: 0,
-          },
-          useNativeDriver: false,
-        }).start();
+        console.log("손땜");
+        /* offset을 0으로 만듬 */
+        POSITION.flattenOffset();
       },
     })
   ).current;
