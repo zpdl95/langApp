@@ -72,11 +72,15 @@ export default function App() {
     toValue: -(deviceWidth + 50),
     useNativeDriver: true,
     tension: 20,
+    restSpeedThreshold: 400 /* 애니메이션이 해당속도가 되면 종료시킴(애니메이션은 점점 느려지면서 끝나는데 빨리끝낼 수 있는 설정) */,
+    restDisplacementThreshold: 100 /* 애니메이션의 남은거리가 해당값에 다다르면 종료시킴(애니메이션의 이동거리가 길면 애니메이션이 늦게끝남) */,
   });
   const goRight = Animated.spring(position, {
     toValue: deviceWidth + 50,
     useNativeDriver: true,
     tension: 20,
+    restSpeedThreshold: 400,
+    restDisplacementThreshold: 100,
   });
   /* PanResponders */
   const panResponder = useRef(
@@ -89,9 +93,9 @@ export default function App() {
         position.setValue(dx);
       },
       onPanResponderRelease: (_, { dx }) => {
-        if (dx < -250) {
+        if (dx < -240) {
           goLeft.start(onDismiss);
-        } else if (dx > 250) {
+        } else if (dx > 240) {
           goRight.start(onDismiss);
         } else {
           Animated.parallel([onPressOut, goCenter]).start();
