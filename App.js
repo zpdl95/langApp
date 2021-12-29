@@ -1,7 +1,10 @@
-import React, { useRef } from "react";
-import { Animated, PanResponder, View } from "react-native";
+import React, { useRef, useState } from "react";
+import { Animated, PanResponder, Text, View, Dimensions } from "react-native";
 import styled from "styled-components/native";
 import { Ionicons } from "@expo/vector-icons";
+import icons from "./icons";
+
+const { width: deviceWidth } = Dimensions.get("window");
 
 const Container = styled.View`
   flex: 1;
@@ -66,12 +69,12 @@ export default function App() {
     useNativeDriver: true,
   });
   const goLeft = Animated.spring(position, {
-    toValue: -500,
+    toValue: -(deviceWidth + 50),
     useNativeDriver: true,
     tension: 20,
   });
   const goRight = Animated.spring(position, {
-    toValue: 500,
+    toValue: deviceWidth + 50,
     useNativeDriver: true,
     tension: 20,
   });
@@ -87,22 +90,34 @@ export default function App() {
       },
       onPanResponderRelease: (_, { dx }) => {
         if (dx < -250) {
-          goLeft.start();
+          goLeft.start(onDismiss);
         } else if (dx > 250) {
-          goRight.start();
+          goRight.start(onDismiss);
         } else {
           Animated.parallel([onPressOut, goCenter]).start();
         }
       },
     })
   ).current;
-  const closePress = () => goLeft.start();
-  const checkPress = () => goRight.start();
+  /* State */
+  const [index, setIndex] = useState(0);
+
+  /* onDismiss함수를 사용해서 2장의 카드로 카드가 무한정 작동되도록 보이게 만듬
+  앞카드가 사라지면 바로 가운데로 순간이동해 다음카드로 보이게함
+  애니메이션 소스를 줄이기 위한 트릭 */
+  const onDismiss = () => {
+    setIndex((prev) => prev + 1);
+    position.setValue(0);
+    scale.setValue(1);
+  };
+  const closePress = () => goLeft.start(onDismiss);
+  const checkPress = () => goRight.start(onDismiss);
   return (
     <Container>
       <CardContainer>
         <Card style={{ transform: [{ scale: secondScale }] }}>
-          <Ionicons name="beer" color="#192a56" size={98} />
+          <Ionicons name={icons[index + 1]} color="#192a56" size={98} />
+          <Text>back</Text>
         </Card>
         <Card
           {...panResponder.panHandlers}
@@ -114,7 +129,8 @@ export default function App() {
             ],
           }}
         >
-          <Ionicons name="pizza" color="#192a56" size={98} />
+          <Ionicons name={icons[index]} color="#192a56" size={98} />
+          <Text>Front</Text>
         </Card>
       </CardContainer>
       <BtnContainer>
